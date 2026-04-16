@@ -64,7 +64,7 @@ const App = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [correctAnimation, setCorrectAnimation] = useState(false);
   
-  // 新增：浮動加分特效狀態
+  // 浮動加分特效狀態
   const [floatingScore, setFloatingScore] = useState(null);
 
   const [tfQuestionWord, setTfQuestionWord] = useState('');
@@ -75,7 +75,7 @@ const App = () => {
   const [lives, setLives] = useState(3);
   const [timeElapsed, setTimeElapsed] = useState(0);
 
-  // 新增：全域靜音控制
+  // 全域靜音控制
   const [isMuted, setIsMuted] = useState(false);
 
   // 全局 Toast 提示系統
@@ -183,7 +183,6 @@ const App = () => {
       setTfQuestionWord(targetWord);
     }
     
-    // 修改：移除是非大考驗 (truefalse) 的自動發音，完全依靠視覺辨識
     if (mode !== 'flashcard' && mode !== 'truefalse') {
       setTimeout(() => playAudio(wordObj.word), 300); 
     }
@@ -340,26 +339,26 @@ const App = () => {
     let letterToMoveIdx = currentShuffled.findIndex(l => l.char === correctChar);
     let letterObj = null;
 
-        if (letterToMoveIdx !== -1) {
-          letterObj = currentShuffled[letterToMoveIdx];
-          currentShuffled.splice(letterToMoveIdx, 1);
-        } else {
-          const wrongSlotIdx = currentSelected.findIndex((l, idx) => l !== null && l.char === correctChar && currentWord[idx] !== correctChar);
-          if (wrongSlotIdx !== -1) {
-            letterObj = currentSelected[wrongSlotIdx];
-            currentSelected[wrongSlotIdx] = null; 
-          }
-        }
+    if (letterToMoveIdx !== -1) {
+      letterObj = currentShuffled[letterToMoveIdx];
+      currentShuffled.splice(letterToMoveIdx, 1);
+    } else {
+      const wrongSlotIdx = currentSelected.findIndex((l, idx) => l !== null && l.char === correctChar && currentWord[idx] !== correctChar);
+      if (wrongSlotIdx !== -1) {
+        letterObj = currentSelected[wrongSlotIdx];
+        currentSelected[wrongSlotIdx] = null; 
+      }
+    }
 
-        if (letterObj) {
-          setScore(s => Math.max(0, s - 1)); 
-          setCombo(0); 
-          playPop();
-          currentSelected[targetIdx] = letterObj;
-          setShuffledLetters(currentShuffled);
-          setSelectedLetters(currentSelected);
-        }
-      }, [appState, wordList, currentIndex, correctAnimation, gameMode, selectedLetters, shuffledLetters, playPop]);
+    if (letterObj) {
+      setScore(s => Math.max(0, s - 1)); 
+      setCombo(0); 
+      playPop();
+      currentSelected[targetIdx] = letterObj;
+      setShuffledLetters(currentShuffled);
+      setSelectedLetters(currentSelected);
+    }
+  }, [appState, wordList, currentIndex, correctAnimation, gameMode, selectedLetters, shuffledLetters, playPop]);
 
   const handleFlip = useCallback(() => {
     playPop();
@@ -403,10 +402,7 @@ const App = () => {
     playSuccess();
     setCorrectAnimation(true); 
     
-    // 修改：加分一次固定一分
     const earnedScore = 1;
-    
-    // 觸發浮動加分特效
     setFloatingScore({ val: earnedScore, id: Date.now() });
 
     setScore(s => s + earnedScore);
@@ -421,7 +417,7 @@ const App = () => {
         setAppState('finished');
       }
     }, 1200); 
-  }, [combo, currentIndex, gameMode, initGameLevel, lives, playSuccess, wordList]);
+  }, [combo, currentIndex, gameMode, initGameLevel, playSuccess, wordList]);
 
   const handleWrongAnswer = useCallback((errors) => {
     playErrorTone();
@@ -489,7 +485,6 @@ const App = () => {
     return () => clearInterval(timer);
   }, [appState, gameMode]);
 
-  // JIT 延遲載入圖片引擎
   useEffect(() => {
     if ((appState !== 'playing' && appState !== 'selectMode' && appState !== 'edit') || wordList.length === 0) return;
 
@@ -532,7 +527,6 @@ const App = () => {
     });
   }, [currentIndex, appState, wordList, editPage]);
 
-  // 全域鍵盤支援
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (appState !== 'playing') return;
@@ -586,7 +580,6 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [appState, selectedLetters, correctAnimation, playPop, unselectLetter, gameMode, handleFlip, nextFlashcard, prevFlashcard, quizOptions, handleQuizSelect, handleTFSelect]);
 
-  // 拼字答題檢查
   useEffect(() => {
     if (appState !== 'playing' || gameMode !== 'spelling' || !wordList[currentIndex]) return;
     if (correctAnimation || wrongIndexes.length > 0) return;
@@ -602,7 +595,7 @@ const App = () => {
   }, [selectedLetters, appState, wordList, currentIndex, correctAnimation, wrongIndexes, gameMode, handleCorrectAnswer, handleWrongAnswer]);
 
   const currentLevel = wordList[currentIndex];
-  const firstEmptySpellingIdx = selectedLetters.findIndex(l => l === null); // 用於焦點提示
+  const firstEmptySpellingIdx = selectedLetters.findIndex(l => l === null); 
 
   const getModeBgColor = () => {
     switch(gameMode) {
@@ -655,7 +648,6 @@ const App = () => {
 
       <div className="min-h-screen wood-bg text-slate-800 font-sans selection:bg-orange-200 overflow-x-hidden flex flex-col relative">
         
-        {/* HUD 導覽列 */}
         <header className="bg-orange-600/90 backdrop-blur-md shadow-[0_4px_0_0_rgba(194,65,12,1)] sticky top-0 z-40 text-white">
           <div className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center max-w-5xl mx-auto gap-2 sm:gap-0">
             <h1 className="text-xl sm:text-2xl font-black flex items-center gap-2 drop-shadow-md tracking-wider cursor-pointer" onClick={() => appState !== 'upload' && setAppState('selectMode')}>
@@ -688,7 +680,6 @@ const App = () => {
                   </div>
                 )}
                 
-                {/* 靜音與回大廳按鈕 */}
                 <div className="flex gap-1 sm:ml-2">
                   <button onClick={() => setIsMuted(!isMuted)} className={`p-2 rounded-xl transition-colors ${isMuted ? 'bg-red-500/80 hover:bg-red-500 text-white' : 'bg-white/20 hover:bg-white/40 text-white'}`} title={isMuted ? "取消靜音" : "靜音"}>
                     {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
@@ -848,7 +839,6 @@ const App = () => {
           {appState === 'playing' && currentLevel && (
             <div className={`flex flex-col items-center w-full max-w-2xl mx-auto ${wrongIndexes.length > 0 && gameMode === 'truefalse' ? 'anim-shake' : ''}`}>
               
-              {/* 🛑 閃卡模式 UI */}
               {gameMode === 'flashcard' ? (
                 <div className="flex flex-col items-center w-full">
                   <div className="bg-purple-500/10 p-6 sm:p-10 rounded-[3rem] border-8 border-white/50 shadow-2xl w-full backdrop-blur-sm relative">
@@ -902,7 +892,6 @@ const App = () => {
 
               ) : (
 
-                /* 🛑 遊戲模式共用 UI */
                 <div className={`p-4 sm:p-8 rounded-[3rem] border-8 border-white/50 shadow-2xl w-full backdrop-blur-sm flex flex-col items-center relative ${getModeBgColor()}`}>
                   
                   <div className="relative bg-white p-4 pb-12 sm:pb-16 rounded-sm shadow-[0_8px_15px_-3px_rgba(0,0,0,0.3)] w-full max-w-xs sm:max-w-sm mb-10 transform -rotate-2 hover:rotate-0 transition-transform duration-300 group">
@@ -949,7 +938,6 @@ const App = () => {
                           const hasLetter = selectedLetters[i] !== null;
                           const char = hasLetter ? selectedLetters[i].char.toLowerCase() : '';
                           
-                          // 焦點提示優化：讓下一個空格發光
                           const isActiveSlot = !hasLetter && i === firstEmptySpellingIdx && !correctAnimation;
                           
                           let slotClass = "w-12 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-3xl font-black rounded-xl transition-all duration-200 select-none ";
@@ -1013,7 +1001,6 @@ const App = () => {
             </div>
           )}
 
-          {/* 畫面：遊戲結束 */}
           {appState === 'gameover' && (
             <div className="bg-slate-900/90 backdrop-blur-md p-8 sm:p-12 rounded-[3rem] shadow-2xl text-center border-4 border-slate-700 w-full max-w-lg text-white transform animate-[shake_0.5s_ease-in-out]">
               <div className="text-red-500 flex justify-center mb-6"><XCircle size={100} className="drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" /></div>
@@ -1025,7 +1012,6 @@ const App = () => {
             </div>
           )}
 
-          {/* 畫面：遊戲通關 */}
           {appState === 'finished' && (
             <div className="bg-white/95 backdrop-blur-sm p-8 sm:p-12 rounded-[3rem] shadow-2xl text-center border-8 border-yellow-400 w-full max-w-lg transform animate-[popOut_0.5s_ease-out]">
               <div className="relative">
